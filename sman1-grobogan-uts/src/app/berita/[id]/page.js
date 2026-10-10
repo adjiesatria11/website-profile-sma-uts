@@ -2,17 +2,24 @@ import Link from "next/link";
 import { beritaList } from "@/data/berita";
 import { notFound } from "next/navigation";
 
+// Fungsi ini memberi tahu Next.js semua ID berita yang ada agar langsung di-render
+export async function generateStaticParams() {
+  return beritaList.map((berita) => ({
+    id: String(berita.id),
+  }));
+}
+
 export default async function BeritaDetailPage({ params }) {
   const resolvedParams = await params;
   const id = resolvedParams?.id;
 
+  // Cari data berita berdasarkan parameter id
   const berita = beritaList.find((b) => String(b.id) === String(id));
 
   if (!berita) {
     return notFound();
   }
 
-  // Ambil isi paragraf secara aman (bisa dari berita.isi atau berita.konten)
   const listParagraf = Array.isArray(berita?.isi)
     ? berita.isi
     : Array.isArray(berita?.konten)
@@ -21,7 +28,7 @@ export default async function BeritaDetailPage({ params }) {
 
   return (
     <div className="py-12 px-6 max-w-3xl mx-auto space-y-6">
-      {/* Tombol [Kembali ke Berita] Sesuai Format Dosen */}
+      {/* Tombol [Kembali ke Berita] Sesuai Ketentuan Dosen */}
       <div>
         <Link
           href="/berita"
@@ -39,10 +46,10 @@ export default async function BeritaDetailPage({ params }) {
 
         {/* Tanggal & Penulis */}
         <div className="text-xs text-slate-500 border-b border-slate-100 pb-3">
-          Dipublikasikan pada: <span className="font-semibold text-slate-700">{berita.tanggal}</span> • Oleh {berita.penulis}
+          Dipublikasikan pada: <span className="font-semibold text-slate-700">{berita.tanggal}</span> • Oleh {berita.penulis || "Humas SMANSAGAN"}
         </div>
 
-        {/* Gambar Berita */}
+        {/* GAMBAR BERITA */}
         <div className="aspect-[16/9] overflow-hidden rounded-xl bg-slate-100">
           <img
             src={berita.gambar}
@@ -51,17 +58,18 @@ export default async function BeritaDetailPage({ params }) {
           />
         </div>
 
-        {/* Isi Berita (Aman dari error .map) */}
-        <div className="text-slate-700 text-sm sm:text-base leading-relaxed space-y-4">
-          {berita.ringkasan && (
-            <p className="font-medium text-slate-900 italic bg-blue-50 p-4 rounded-lg border-l-4 border-blue-600">
-              {berita.ringkasan}
-            </p>
-          )}
+        {/* Ringkasan */}
+        {berita.ringkasan && (
+          <p className="font-medium text-slate-900 italic bg-blue-50 p-4 rounded-lg border-l-4 border-blue-600 text-sm sm:text-base leading-relaxed">
+            {berita.ringkasan}
+          </p>
+        )}
 
-          {listParagraf.map((paragraf, idx) => (
+        {/* Isi Berita */}
+        <div className="text-slate-700 text-sm sm:text-base leading-relaxed space-y-4">
+          {listParagraf.map((paragraf, idx) =>
             paragraf ? <p key={idx}>{paragraf}</p> : null
-          ))}
+          )}
         </div>
 
         {/* Tombol Kembali di Bagian Bawah */}
